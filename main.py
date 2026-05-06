@@ -65,6 +65,8 @@ async def send_discord_alert(
     text: str,
     matched: list[str],
 ) -> None:
+    log.info("Sending alert to Discord for [%s] keywords=%s", channel_name, matched)
+    
     link = (
         f"https://t.me/{channel_username}/{message_id}"
         if channel_username
@@ -97,12 +99,15 @@ client = TelegramClient(StringSession(SESSION_STRING), API_ID, API_HASH)
 
 @client.on(events.NewMessage())
 async def handler(event: events.NewMessage.Event) -> None:
+    log.info("Handling new message...")
     if not event.is_channel:
         return
 
     text = event.message.text or ""
     if not text:
         return
+    
+    log.info("Message text: %s", text[:100].replace("\n", " "))
 
     chat = await event.get_chat()
     channel_id = str(chat.id)
@@ -135,7 +140,7 @@ async def handler(event: events.NewMessage.Event) -> None:
 
 
 async def main() -> None:
-    log.info("Iniciando... API_ID=%s SESSION_STRING_len=%s", API_ID, len(SESSION_STRING))
+    log.info("Iniciando...")
     if not KEYWORDS:
         log.warning("Nenhuma keyword em KEYWORDS — todos os canais serão monitorados sem filtro.")
     if CHANNEL_FILTER:
