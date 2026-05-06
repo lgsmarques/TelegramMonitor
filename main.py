@@ -29,7 +29,7 @@ KEYWORDS: list[str] = [
     if kw.strip()
 ]
 
-# Opcional: só monitorar esses canais (username ou id). Vazio = todos.
+# Optional: only monitor these channels (username or id). Empty = all.
 CHANNEL_FILTER: set[str] = {
     c.strip().lstrip("@").lower()
     for c in os.environ.get("TELEGRAM_CHANNELS", "").split(",")
@@ -38,7 +38,7 @@ CHANNEL_FILTER: set[str] = {
 
 COOLDOWN_SECONDS = int(os.environ.get("COOLDOWN_SECONDS", "60"))
 
-# cooldown_cache[(channel_id, keyword)] = monotonic timestamp do último alerta
+# cooldown_cache[(channel_id, keyword)] = monotonic timestamp of last alert
 _cooldown: dict[tuple[str, str], float] = {}
 
 # -----------------------------------------------------------------------
@@ -70,11 +70,11 @@ async def send_discord_alert(
     link = (
         f"https://t.me/{channel_username}/{message_id}"
         if channel_username
-        else "_(canal privado — sem link público)_"
+        else "_(private channel — no public link)_"
     )
 
     embed = {
-        "title": f"\U0001f6d2 Promoção em {channel_name}",
+        "title": f"\U0001f6d2 Promotion in {channel_name}",
         "description": text[:2000],
         "color": 0x2BBBAD,
         "fields": [
@@ -91,7 +91,7 @@ async def send_discord_alert(
     async with httpx.AsyncClient(timeout=10) as http:
         resp = await http.post(DISCORD_WEBHOOK_URL, json={"embeds": [embed]})
         resp.raise_for_status()
-        log.info("Alerta enviado: [%s] keywords=%s", channel_name, matched)
+        log.info("Alert sent: [%s] keywords=%s", channel_name, matched)
 
 
 client = TelegramClient(StringSession(SESSION_STRING), API_ID, API_HASH)
@@ -125,10 +125,10 @@ async def handler(event: events.NewMessage.Event) -> None:
     if not hits:
         return
 
-    # Filtra keywords em cooldown e registra as que vão ser enviadas
+    # Filter keywords on cooldown and register the ones to be sent
     new_hits = [kw for kw in hits if not on_cooldown(channel_id, kw)]
     if not new_hits:
-        log.debug("Cooldown ativo para [%s] keywords=%s", channel_name, hits)
+        log.debug("Cooldown active for [%s] keywords=%s", channel_name, hits)
         return
 
     for kw in new_hits:
@@ -140,16 +140,16 @@ async def handler(event: events.NewMessage.Event) -> None:
 
 
 async def main() -> None:
-    log.info("Iniciando...")
+    log.info("Starting...")
     if not KEYWORDS:
-        log.warning("Nenhuma keyword em KEYWORDS — todos os canais serão monitorados sem filtro.")
+        log.warning("No keywords set in KEYWORDS — all channels will be monitored without filter.")
     if CHANNEL_FILTER:
-        log.info("Filtrando canais: %s", CHANNEL_FILTER)
+        log.info("Filtering channels: %s", CHANNEL_FILTER)
 
     await client.start()
-    log.info("Conectado ao Telegram. Monitorando mensagens...")
+    log.info("Connected to Telegram. Monitoring messages...")
     async with httpx.AsyncClient(timeout=10) as http:
-        await http.post(DISCORD_WEBHOOK_URL, json={"content": "Bot conectado ao Telegram e monitorando mensagens."})
+        await http.post(DISCORD_WEBHOOK_URL, json={"content": "Bot connected to Telegram and monitoring messages."})
     await client.run_until_disconnected()
 
 
