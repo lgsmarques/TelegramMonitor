@@ -135,6 +135,7 @@ async def handler(event: events.NewMessage.Event) -> None:
 
 
 async def main() -> None:
+    log.info("Iniciando... API_ID=%s SESSION_STRING_len=%s", API_ID, len(SESSION_STRING))
     if not KEYWORDS:
         log.warning("Nenhuma keyword em KEYWORDS — todos os canais serão monitorados sem filtro.")
     if CHANNEL_FILTER:
