@@ -148,6 +148,8 @@ async def main() -> None:
 
     await client.start()
     log.info("Conectado ao Telegram. Monitorando mensagens...")
+    async with httpx.AsyncClient(timeout=10) as http:
+        await http.post(DISCORD_WEBHOOK_URL, json={"content": "Bot conectado ao Telegram e monitorando mensagens."})
     await client.run_until_disconnected()
 
 
