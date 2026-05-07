@@ -74,7 +74,7 @@ async def send_discord_alert(
     )
 
     embed = {
-        "title": f"\U0001f6d2 Promotion in {channel_name}",
+        "title": f"\U0001f6d2 Promoção em {channel_name}",
         "description": text[:2000],
         "color": 0x2BBBAD,
         "fields": [
